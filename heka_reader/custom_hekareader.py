@@ -2,22 +2,25 @@ import heka_reader
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as pl
-
+import re
 __author__ = "Caroline Fischer"
 
 
 def nested_dict():
     return defaultdict(nested_dict)
-
-
+        
+        
 def set_key_value_for_copied_keys(dictionary, key, value, copy_num=1):
     if dictionary.get(key) is None:
         dictionary[key] = value
-    elif dictionary.get(key + '(' + str(copy_num) + ')') is None:
-        dictionary[key + '(' + str(copy_num) + ')'] = value
     else:
-        copy_num += 1
-        set_key_value_for_copied_keys(dictionary, key, value, copy_num)
+        highest_copy = 0
+        for k in dictionary.keys():
+            if key in k:
+                copy_num = re.findall('\d+', k)
+                if len(copy_num) > 0 and int(copy_num[0]) > highest_copy:
+                    highest_copy = int(copy_num[0])
+        dictionary[key + '(' + str(highest_copy+1) + ')'] = value
 
 
 class HekaReader:
@@ -111,7 +114,8 @@ def get_indices_for_protocol(hekareader, protocol):
 
 
 if __name__ == '__main__':
-    file_dir = './2015_08_26b/2015_08_26b.dat'
+    #file_dir = './2015_08_26b/2015_08_26b.dat'
+    file_dir = '/media/cfischer/TOSHIBA EXT/2019-04-03-Sicherung_all/Phd/DAP-Project/cell_data/raw_data/2014_03_06c.dat'
     hekareader = HekaReader(file_dir)
     #hekareader.data_bundle.pgf # TODO
     type_to_index = hekareader.get_type_to_index()
